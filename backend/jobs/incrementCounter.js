@@ -25,3 +25,24 @@ export const incrementCounter = async (userId) => {
     return { error: "An error occurred" };
   }
 };
+
+
+
+
+export const getCounter = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    return {
+      counter: user.counter,
+      prizes: user.prizes,
+    };
+  } catch (error) {
+    console.error("Error retrieving user data:", error);
+    return { error: "An error occurred while fetching data" };
+  }
+};

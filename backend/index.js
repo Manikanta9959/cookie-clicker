@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-import { incrementCounter } from "./jobs/incrementCounter.js";
+import { incrementCounter, getCounter } from "./jobs/incrementCounter.js";
 import { registerUser, loginUser, authenticateToken } from "./jobs/auth.js";
 
 const app = express();
@@ -12,7 +12,6 @@ const PORT = 8001;
 app.use(bodyParser.json());
 app.use(cors());
 
-// Connect to MongoDB
 // Connect to MongoDB
 mongoose.connect("mongodb+srv://sivachallano1:oQuAukv1MM09pkdS@cookie-clicker.1wssm.mongodb.net/", {
     useNewUrlParser: true,
@@ -35,6 +34,12 @@ app.post("/login", async (req, res) => {
 // Game Route (Requires Authentication)
 app.post("/click", authenticateToken, async (req, res) => {
   const result = await incrementCounter(req.userId);
+  res.json(result);
+});
+
+
+app.post("/get", authenticateToken, async (req, res) => {
+  const result = await getCounter(req.userId);
   res.json(result);
 });
 
