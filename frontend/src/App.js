@@ -9,17 +9,17 @@ const App = () => {
   const [prizes, setPrizes] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Set Axios default headers for the token (if available)
+  // Set Axios default headers for token
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      handleClick("get"); // Fetch counter and prizes on app load if token exists
+      fetchCounterAndPrizes();
     }
   }, [token]);
 
   const handleRegister = async () => {
     if (!username || !password) {
-      alert("Username and password cannot be empty!");
+      alert("Please fill out both username and password!");
       return;
     }
     setLoading(true);
@@ -30,8 +30,8 @@ const App = () => {
       });
       alert(response.data.message || response.data.error);
     } catch (error) {
-      console.error("Error during registration:", error);
-      alert("Registration failed. Please try again.");
+      console.error("Registration error:", error);
+      alert("Registration failed. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -39,7 +39,7 @@ const App = () => {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      alert("Username and password cannot be empty!");
+      alert("Please fill out both username and password!");
       return;
     }
     setLoading(true);
@@ -50,27 +50,27 @@ const App = () => {
       });
       if (response.data.token) {
         setToken(response.data.token);
-        localStorage.setItem("token", response.data.token); // Persist token in localStorage
+        localStorage.setItem("token", response.data.token); // Save token to localStorage
       } else {
         alert(response.data.error);
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Login error:", error);
       alert("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClick = async (click) => {
+  const fetchCounterAndPrizes = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`http://localhost:8001/${click}`);
+      const response = await axios.post("http://localhost:8001/get");
       const { counter, prizes } = response.data;
       setCounter(counter);
       setPrizes(prizes);
     } catch (error) {
-      console.error("Error clicking button:", error);
+      console.error("Failed to fetch data:", error);
       if (error.response?.status === 401) {
         alert("Session expired. Please log in again.");
         handleLogout();
@@ -82,9 +82,24 @@ const App = () => {
     }
   };
 
+  const handleClick = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post("http://localhost:8001/click");
+      const { counter, prizes } = response.data;
+      setCounter(counter);
+      setPrizes(prizes);
+    } catch (error) {
+      console.error("Error clicking button:", error);
+      alert("Failed to process the click. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     setToken("");
-    localStorage.removeItem("token"); // Clear token from localStorage
+    localStorage.removeItem("token"); // Remove token from localStorage
     setCounter(0);
     setPrizes(0);
   };
@@ -99,30 +114,86 @@ const App = () => {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={{ marginRight: "10px" }}
+            style={{ marginRight: "10px", padding: "8px" }}
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ marginRight: "10px" }}
+            style={{ marginRight: "10px", padding: "8px" }}
           />
-          <button onClick={handleRegister} style={{ marginRight: "10px" }} disabled={loading}>
+          <button
+            onClick={handleRegister}
+            style={{
+              padding: "10px 20px",
+              marginRight: "5px",
+              fontSize: "16px",
+              backgroundColor: "#28a745",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+            // style={{ marginRight: "10px", padding: "8px 16px" }}
+            disabled={loading}
+          >
             {loading ? "Registering..." : "Register"}
           </button>
-          <button onClick={handleLogin} disabled={loading}>
+          <button
+            onClick={handleLogin}
+            style={{
+              padding: "10px 20px",
+              marginRight: "5px",
+              fontSize: "16px",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+            // style={{ padding: "8px 16px" }}
+            disabled={loading}
+          >
             {loading ? "Logging in..." : "Login"}
           </button>
         </div>
       ) : (
         <div>
-          <p>Counter: {counter}</p>
-          <p>Prizes: {prizes}</p>
-          <button onClick={() => {handleClick("click")}} style={{ padding: "10px 20px", fontSize: "16px" }} disabled={loading}>
+          <p>
+            <strong>Counter:</strong> {counter}
+          </p>
+          <p>
+            <strong>Prizes:</strong> {prizes}
+          </p>
+          <button
+            onClick={handleClick}
+            style={{
+              padding: "10px 20px",
+              marginRight: "5px",
+              fontSize: "16px",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+            disabled={loading}
+          >
             {loading ? "Processing..." : "Click Me!"}
           </button>
-          <button onClick={handleLogout} style={{ marginTop: "20px" }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#dc3545",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
             Logout
           </button>
         </div>
